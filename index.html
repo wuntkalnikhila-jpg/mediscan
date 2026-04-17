@@ -192,29 +192,36 @@
   /* ── SCAN IMAGE PREVIEW ── */
   .scan-preview-img { width: 100%; max-height: 220px; object-fit: contain; border-radius: var(--radius); border: 1px solid var(--border); }
 
+  /* ── OVERLAY (mobile) ── */
+  .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; }
+  .overlay.show { display: block; }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
-  .sidebar { position: fixed; left: -228px; top: 0; height: 100vh; z-index: 1000; transition: left 0.3s; }
-  .sidebar.open { left: 0; box-shadow: 4px 0 20px rgba(0,0,0,0.2); }
-  .main { width: 100%; }
-  .grid-2, .grid-3, .stat-grid { grid-template-columns: 1fr; }
-  .topbar { padding: 0 12px; }
-  .content { padding: 12px; }
-  .chat-wrap { height: 450px; }
-  .hosp-card { flex-direction: column; }
-  .hosp-actions { flex-direction: row; margin-left: 0; }
-  .data-table { font-size: 11px; }
-  .data-table th, .data-table td { padding: 6px 6px; }
-  .menu-btn { display: flex !important; }
-}  
+    .sidebar { position: fixed; left: -228px; top: 0; height: 100vh; z-index: 1000; transition: left 0.3s; }
+    .sidebar.open { left: 0; box-shadow: 4px 0 20px rgba(0,0,0,0.2); }
+    .main { width: 100%; }
+    .grid-2, .grid-3, .stat-grid { grid-template-columns: 1fr; }
+    .topbar { padding: 0 12px; }
+    .content { padding: 12px; }
+    .chat-wrap { height: 450px; }
+    .hosp-card { flex-direction: column; }
+    .hosp-actions { flex-direction: row; margin-left: 0; }
+    .data-table { font-size: 11px; }
+    .data-table th, .data-table td { padding: 6px 6px; }
+    .menu-btn { display: flex !important; }
+  }
 </style>
 </head>
 <body>
 
+<!-- Overlay for mobile menu -->
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
 <!-- ============================================================
      SIDEBAR
 ============================================================ -->
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="logo">
     <div class="logo-icon">
       <svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm0-4h-2V7h2v8z"/></svg>
@@ -237,7 +244,7 @@
     <button class="nav-item" id="nav-scanner" onclick="switchPanel('scanner')">
       <span class="icon">📷</span> Scan Prescription
     </button>
-    <div class="nav-label">Emergency & Support</div>
+    <div class="nav-label">Emergency &amp; Support</div>
     <button class="nav-item" id="nav-hospitals" onclick="switchPanel('hospitals')">
       <span class="icon">🏥</span> Nearby Hospitals
     </button>
@@ -254,9 +261,9 @@
 ============================================================ -->
 <main class="main">
   <header class="topbar">
+    <button class="menu-btn btn" onclick="toggleMenu()" style="display:none;padding:8px 12px;font-size:18px;">☰</button>
     <span class="topbar-title" id="topbar-title">Medicine Search</span>
     <span class="topbar-badge">AI-Powered</span>
-    <button class="menu-btn btn" onclick="toggleMenu()"      style="display:none;margin-left:0;">☰</button>
     <div class="topbar-right">
       <select class="lang-select" id="global-lang" onchange="setGlobalLang(this.value)">
         <option value="en">🌐 English</option>
@@ -272,9 +279,7 @@
 
   <div class="content">
 
-    <!-- ======================================================
-         PANEL 1: MEDICINE SEARCH
-    ====================================================== -->
+    <!-- PANEL 1: MEDICINE SEARCH -->
     <div class="panel active" id="panel-search">
       <div class="card">
         <div class="row" style="margin-bottom:12px;">
@@ -295,7 +300,6 @@
           <span class="filter-chip" onclick="selectFilter(this,'cream')">🧴 Cream</span>
         </div>
       </div>
-
       <div id="search-results">
         <div class="empty">
           <div class="empty-icon">💊</div>
@@ -305,9 +309,7 @@
       </div>
     </div>
 
-    <!-- ======================================================
-         PANEL 2: AI CHATBOT
-    ====================================================== -->
+    <!-- PANEL 2: AI CHATBOT -->
     <div class="panel" id="panel-chatbot">
       <div class="chat-wrap">
         <div class="chat-header">
@@ -324,16 +326,14 @@
       </div>
     </div>
 
-    <!-- ======================================================
-         PANEL 3: PRESCRIPTION
-    ====================================================== -->
+    <!-- PANEL 3: PRESCRIPTION -->
     <div class="panel" id="panel-prescription">
       <div class="card">
         <div class="card-title">📋 Enter Prescription Details</div>
         <div class="grid-2" style="margin-bottom:10px;">
           <input class="input" id="rx-patient" placeholder="Patient full name" />
           <input class="input" id="rx-age" placeholder="Patient age (e.g. 35)" />
-          <input class="input" id="rx-doctor" placeholder="Doctor name & qualification" />
+          <input class="input" id="rx-doctor" placeholder="Doctor name &amp; qualification" />
           <input class="input" id="rx-date" type="date" />
         </div>
         <textarea class="input textarea" id="rx-medicines" placeholder="Enter medicines (one per line):&#10;Paracetamol 500mg - twice daily after meals for 5 days&#10;Amoxicillin 250mg - three times daily for 7 days&#10;Pantoprazole 40mg - once daily before breakfast"></textarea>
@@ -345,9 +345,7 @@
       <div id="rx-output"></div>
     </div>
 
-    <!-- ======================================================
-         PANEL 4: SCAN PRESCRIPTION
-    ====================================================== -->
+    <!-- PANEL 4: SCAN PRESCRIPTION -->
     <div class="panel" id="panel-scanner">
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('scan-file').click()"
            ondragover="event.preventDefault();this.classList.add('drag')"
@@ -358,7 +356,6 @@
         <div class="upload-title">Scan or Upload Prescription</div>
         <div class="upload-sub">Click or drag &amp; drop your prescription image here<br>Supports JPG, PNG, HEIC, PDF · Max 10MB</div>
       </div>
-
       <div id="scan-preview" style="display:none;">
         <div class="card" style="margin-top:14px;">
           <div class="card-title"><span class="card-icon" style="background:var(--green-light);">✅</span> Uploaded Successfully</div>
@@ -372,9 +369,7 @@
       <div id="scan-result"></div>
     </div>
 
-    <!-- ======================================================
-         PANEL 5: NEARBY HOSPITALS
-    ====================================================== -->
+    <!-- PANEL 5: NEARBY HOSPITALS -->
     <div class="panel" id="panel-hospitals">
       <div class="card">
         <div class="card-title">🏥 Find Nearby Hospitals</div>
@@ -390,7 +385,7 @@
           <button class="btn btn-primary" onclick="findHospitals()">🔍 Find</button>
         </div>
         <div class="alert alert-info" style="margin-top:12px;">
-          📍 Results are AI-generated suggestions. Verify contact details before visiting. Use Google Maps link for exact directions.
+          📍 Results are AI-generated suggestions. Verify contact details before visiting.
         </div>
       </div>
       <div id="hospitals-list">
@@ -402,14 +397,12 @@
       </div>
     </div>
 
-    <!-- ======================================================
-         PANEL 6: SYMPTOM ADVISOR
-    ====================================================== -->
+    <!-- PANEL 6: SYMPTOM ADVISOR -->
     <div class="panel" id="panel-situation">
       <div class="card">
         <div class="card-title">⚕️ Describe Your Situation</div>
         <textarea class="input textarea" id="situation-input" style="min-height:110px;"
-          placeholder="Describe your symptoms in detail (e.g.):&#10;I am 35 years old. I have had fever (102°F), severe headache, and body pain for the last 2 days. I also have a runny nose and mild cough. I am not diabetic but have mild hypertension..."></textarea>
+          placeholder="Describe your symptoms in detail..."></textarea>
         <div class="row" style="margin-top:12px;">
           <button class="btn btn-primary" onclick="getSituationAdvice()">🔍 Get AI Advice</button>
           <span style="font-size:12px;color:var(--text-3);">AI will assess severity and suggest what to do</span>
@@ -418,20 +411,23 @@
       <div id="situation-output"></div>
     </div>
 
-  </div><!-- /content -->
+  </div>
 </main>
 
-<!-- ============================================================
-     JAVASCRIPT
-============================================================ -->
 <script>
-const API = '';  // empty = same origin (server.js serves index.html)
+const API = '';
 const panels = ['search','chatbot','prescription','scanner','hospitals','situation'];
 const titles = {
   search:'Medicine Search', chatbot:'AI Health Chat',
   prescription:'Prescription', scanner:'Scan Prescription',
   hospitals:'Nearby Hospitals', situation:'Symptom Advisor'
 };
+
+// ── Mobile menu ───────────────────────────────────────────────
+function toggleMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
 
 // ── Panel switcher ────────────────────────────────────────────
 function switchPanel(name) {
@@ -440,6 +436,9 @@ function switchPanel(name) {
     document.getElementById('nav-'+p).classList.toggle('active', p===name);
   });
   document.getElementById('topbar-title').textContent = titles[name];
+  // Close sidebar on mobile after selecting
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
   window.scrollTo(0,0);
 }
 
@@ -474,89 +473,54 @@ async function searchMedicine() {
     if (!json.success) throw new Error(json.error);
     renderMedicineResult(json.data);
   } catch(e) {
-    el.innerHTML = `<div class="card"><div class="alert alert-danger">❌ Error: ${e.message}. Please check the server is running and try again.</div></div>`;
+    el.innerHTML = `<div class="card"><div class="alert alert-danger">❌ Error: ${e.message}</div></div>`;
   }
 }
 
 function renderMedicineResult(d) {
   const el = document.getElementById('search-results');
   const pregColor = {safe:'tag-green',caution:'tag-amber',avoid:'tag-red',unknown:'tag-blue'};
-
   el.innerHTML = `
   <div class="stat-grid">
     <div class="stat-card"><div class="stat-label">Type</div><div class="stat-val" style="font-size:15px;">${d.type||'—'}</div></div>
     <div class="stat-card"><div class="stat-label">Category</div><div class="stat-val" style="font-size:13px;line-height:1.3;">${d.category||'—'}</div></div>
     <div class="stat-card"><div class="stat-label">Pregnancy</div><div class="stat-val"><span class="tag ${pregColor[d.pregnancy]||'tag-blue'}">${d.pregnancy||'unknown'}</span></div></div>
   </div>
-
   ${d.brandNames?.length ? `<div class="card" style="padding:12px 16px;"><span style="font-size:12px;color:var(--text-3);">Brand names: </span>${d.brandNames.map(b=>`<span class="tag tag-blue">${b}</span>`).join('')}</div>` : ''}
-
   ${d.mechanism ? `<div class="card"><div class="card-title"><span class="card-icon" style="background:#e3f2fd;">🔬</span>Mechanism of Action</div><p style="font-size:13px;color:var(--text-2);line-height:1.7;">${d.mechanism}</p></div>` : ''}
-
   <div class="grid-2">
-    <div class="card">
-      <div class="card-title"><span class="card-icon" style="background:var(--green-light);">✅</span>Advantages</div>
-      ${(d.advantages||[]).map(a=>`<div class="tag tag-green">${a}</div>`).join('')}
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="card-icon" style="background:var(--red-light);">⚠️</span>Disadvantages</div>
-      ${(d.disadvantages||[]).map(a=>`<div class="tag tag-red">${a}</div>`).join('')}
-    </div>
+    <div class="card"><div class="card-title"><span class="card-icon" style="background:var(--green-light);">✅</span>Advantages</div>${(d.advantages||[]).map(a=>`<div class="tag tag-green">${a}</div>`).join('')}</div>
+    <div class="card"><div class="card-title"><span class="card-icon" style="background:var(--red-light);">⚠️</span>Disadvantages</div>${(d.disadvantages||[]).map(a=>`<div class="tag tag-red">${a}</div>`).join('')}</div>
   </div>
-
   <div class="card">
     <div class="card-title"><span class="card-icon" style="background:var(--amber-light);">🩺</span>Side Effects</div>
     <div class="grid-3">
-      <div>
-        <div class="section-h" style="color:#92400e;">⚡ Common</div>
-        ${(d.sideEffects?.common||[]).map(s=>`<div class="tag tag-amber">${s}</div>`).join('')}
-      </div>
-      <div>
-        <div class="section-h" style="color:var(--red);">🚨 Serious</div>
-        ${(d.sideEffects?.serious||[]).map(s=>`<div class="tag tag-red">${s}</div>`).join('')}
-      </div>
-      <div>
-        <div class="section-h" style="color:#5b21b6;">🔵 Rare</div>
-        ${(d.sideEffects?.rare||[]).map(s=>`<div class="tag tag-purple">${s}</div>`).join('')}
-      </div>
+      <div><div class="section-h" style="color:#92400e;">⚡ Common</div>${(d.sideEffects?.common||[]).map(s=>`<div class="tag tag-amber">${s}</div>`).join('')}</div>
+      <div><div class="section-h" style="color:var(--red);">🚨 Serious</div>${(d.sideEffects?.serious||[]).map(s=>`<div class="tag tag-red">${s}</div>`).join('')}</div>
+      <div><div class="section-h" style="color:#5b21b6;">🔵 Rare</div>${(d.sideEffects?.rare||[]).map(s=>`<div class="tag tag-purple">${s}</div>`).join('')}</div>
     </div>
   </div>
-
   <div class="card">
     <div class="card-title"><span class="card-icon" style="background:var(--blue-light);">💊</span>Dosage by Age Group</div>
     <table class="data-table">
-      <thead><tr><th>Age Group</th><th>Dose</th><th>Frequency</th><th>Special Notes</th></tr></thead>
-      <tbody>
-        ${(d.doses||[]).map(row=>`<tr><td><strong>${row.ageGroup||''}</strong></td><td>${row.dose||''}</td><td>${row.frequency||''}</td><td style="color:var(--text-2);">${row.notes||'—'}</td></tr>`).join('')}
-      </tbody>
+      <thead><tr><th>Age Group</th><th>Dose</th><th>Frequency</th><th>Notes</th></tr></thead>
+      <tbody>${(d.doses||[]).map(row=>`<tr><td><strong>${row.ageGroup||''}</strong></td><td>${row.dose||''}</td><td>${row.frequency||''}</td><td style="color:var(--text-2);">${row.notes||'—'}</td></tr>`).join('')}</tbody>
     </table>
   </div>
-
   <div class="grid-2">
-    <div class="card">
-      <div class="card-title"><span class="card-icon" style="background:var(--purple-light);">🚫</span>Contraindications</div>
-      ${(d.contraindications||[]).map(c=>`<div class="tag tag-red">${c}</div>`).join('')}
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="card-icon" style="background:var(--amber-light);">⚡</span>Drug Interactions</div>
-      ${(d.interactions||[]).map(i=>`<div class="tag tag-amber">${i}</div>`).join('')}
-    </div>
+    <div class="card"><div class="card-title"><span class="card-icon" style="background:var(--purple-light);">🚫</span>Contraindications</div>${(d.contraindications||[]).map(c=>`<div class="tag tag-red">${c}</div>`).join('')}</div>
+    <div class="card"><div class="card-title"><span class="card-icon" style="background:var(--amber-light);">⚡</span>Drug Interactions</div>${(d.interactions||[]).map(i=>`<div class="tag tag-amber">${i}</div>`).join('')}</div>
   </div>
-
   ${d.storage ? `<div class="card"><div class="card-title"><span class="card-icon" style="background:var(--green-light);">📦</span>Storage</div><p style="font-size:13px;color:var(--text-2);">${d.storage}</p></div>` : ''}
-
   ${d.overdose ? `<div class="card"><div class="card-title"><span class="card-icon" style="background:var(--red-light);">🚨</span>Overdose Information</div><p style="font-size:13px;color:var(--text);">${d.overdose}</p></div>` : ''}
-
   <div class="row" style="margin-bottom:8px;">
     <button class="btn btn-green" onclick="downloadMedicinePDF()">⬇ Download PDF Report</button>
     <button class="btn btn-primary" onclick="switchPanel('chatbot')">Ask AI More ↗</button>
   </div>
-  <div class="alert alert-warn">⚠️ This information is for educational purposes only. Always consult a licensed doctor or pharmacist before taking any medication.</div>`;
-
+  <div class="alert alert-warn">⚠️ For educational purposes only. Always consult a licensed doctor.</div>`;
   window._lastMedicineData = d;
 }
 
-// ── Download Medicine PDF ─────────────────────────────────────
 async function downloadMedicinePDF() {
   if (!window._lastMedicineData) return;
   try {
@@ -575,18 +539,15 @@ async function sendChat() {
   const inp = document.getElementById('chat-input');
   const text = inp.value.trim();
   if (!text) return;
-
   const box = document.getElementById('chat-messages');
   addMsg(box, text, 'user');
   chatHistory.push({ role:'user', content:text });
   inp.value = '';
-
   const typingEl = document.createElement('div');
   typingEl.className = 'msg msg-bot typing';
   typingEl.innerHTML = '<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
   box.appendChild(typingEl);
   box.scrollTop = box.scrollHeight;
-
   try {
     const res = await fetch(API+'/api/chat', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -598,7 +559,7 @@ async function sendChat() {
     typingEl.classList.remove('typing');
     typingEl.textContent = reply;
   } catch(e) {
-    typingEl.textContent = 'Connection error. Make sure the server is running.';
+    typingEl.textContent = 'Connection error.';
   }
   box.scrollTop = box.scrollHeight;
 }
@@ -623,10 +584,8 @@ async function processPrescription() {
   const date    = document.getElementById('rx-date').value || new Date().toISOString().split('T')[0];
   const meds    = document.getElementById('rx-medicines').value.trim();
   if (!meds) { alert('Please enter medicine details.'); return; }
-
   const out = document.getElementById('rx-output');
   out.innerHTML = `<div class="card">${spinner('Processing prescription...')}</div>`;
-
   try {
     const res = await fetch(API+'/api/prescription/process', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -647,39 +606,32 @@ function renderPrescriptionCard(data) {
   out.innerHTML = `
   <div class="rx-card">
     <div class="rx-header">
-      <div>
-        <div class="rx-doctor-name">Dr. ${data.doctor||'—'}</div>
-        <div class="rx-meta">Medical Prescription · ${data.date||''}</div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-size:13px;font-weight:700;opacity:0.9;">MediScan AI</div>
-        <div class="rx-meta">Verified Prescription</div>
-      </div>
+      <div><div class="rx-doctor-name">Dr. ${data.doctor||'—'}</div><div class="rx-meta">Medical Prescription · ${data.date||''}</div></div>
+      <div style="text-align:right;"><div style="font-size:13px;font-weight:700;opacity:0.9;">MediScan AI</div><div class="rx-meta">Verified Prescription</div></div>
     </div>
     <div class="rx-patient-bar">
       <div><div class="rx-patient-label">PATIENT</div><div class="rx-patient-val">${data.patient||'—'}</div></div>
       <div><div class="rx-patient-label">AGE</div><div class="rx-patient-val">${data.age||'—'}</div></div>
       <div><div class="rx-patient-label">DATE</div><div class="rx-patient-val">${data.date||'—'}</div></div>
-      <div><div class="rx-patient-label">MEDICINES</div><div class="rx-patient-val">${items.length || '?'}</div></div>
+      <div><div class="rx-patient-label">MEDICINES</div><div class="rx-patient-val">${items.length||'?'}</div></div>
     </div>
     <div class="rx-body">
-      ${items.length > 0 ? items.map((m,i) => `
+      ${items.map((m,i)=>`
       <div class="rx-item">
         <div class="rx-num">${i+1}</div>
         <div style="flex:1;">
           <div class="rx-med-name">${m.name||'Medicine'} <span style="font-weight:400;color:var(--text-2);">${m.strength||''}</span></div>
           <div class="rx-detail">📅 ${m.frequency||''} · ⏱ ${m.duration||''} · ${m.timing||''}</div>
           ${m.instructions?`<div class="rx-detail">📌 ${m.instructions}</div>`:''}
-          ${m.sideEffectNote?`<div class="rx-detail" style="color:var(--amber);">⚡ ${m.sideEffectNote}</div>`:''}
           ${m.warnings?`<span class="tag tag-red">⚠ ${m.warnings}</span>`:''}
         </div>
-      </div>`).join('') : `<div style="padding:16px;font-size:13px;color:var(--text-2);">${document.getElementById('rx-medicines').value.split('\n').filter(Boolean).map((l,i)=>`<div style="padding:10px 0;border-bottom:1px solid var(--gray-mid);">💊 ${l}</div>`).join('')}</div>`}
+      </div>`).join('')}
     </div>
   </div>
   <div class="row" style="margin-top:12px;">
     <button class="btn btn-green" onclick="downloadRxPDF()">⬇ Download Prescription PDF</button>
   </div>
-  <div class="alert alert-warn" style="margin-top:10px;">⚠️ Keep this prescription safe. Take medicines as directed by your doctor.</div>`;
+  <div class="alert alert-warn" style="margin-top:10px;">⚠️ Take medicines as directed by your doctor.</div>`;
 }
 
 async function downloadRxPDF() {
@@ -691,7 +643,7 @@ async function downloadRxPDF() {
       body: JSON.stringify(data)
     });
     const blob = await res.blob();
-    downloadBlob(blob, 'prescription-'+( data.patient||'patient')+'.pdf');
+    downloadBlob(blob, 'prescription-'+(data.patient||'patient')+'.pdf');
   } catch(e) { alert('PDF error: '+e.message); }
 }
 
@@ -723,17 +675,14 @@ async function analyzeScan() {
   if (!window._scanFile) { alert('Please upload a prescription image first.'); return; }
   const out = document.getElementById('scan-result');
   out.innerHTML = `<div class="card">${spinner('Reading prescription with AI...')}</div>`;
-
   const formData = new FormData();
   formData.append('file', window._scanFile);
-
   try {
     const res = await fetch(API+'/api/prescription/scan', { method:'POST', body:formData });
     const json = await res.json();
     if (!json.success) throw new Error(json.error);
     const d = json.data;
     window._lastScanData = d;
-
     out.innerHTML = `
     <div class="card" style="margin-top:14px;">
       <div class="card-title"><span class="card-icon" style="background:var(--green-light);">🔍</span>Scan Analysis Complete
@@ -746,9 +695,7 @@ async function analyzeScan() {
       <div class="section-h">💊 Extracted Medicines</div>
       <table class="data-table">
         <thead><tr><th>#</th><th>Medicine</th><th>Strength</th><th>Frequency</th><th>Duration</th><th>Instructions</th></tr></thead>
-        <tbody>
-          ${(d.medicines||[]).map((m,i)=>`<tr><td>${i+1}</td><td><strong>${m.name||''}</strong></td><td>${m.strength||'—'}</td><td>${m.frequency||'—'}</td><td>${m.duration||'—'}</td><td style="color:var(--text-2);">${m.instructions||'—'}</td></tr>`).join('')}
-        </tbody>
+        <tbody>${(d.medicines||[]).map((m,i)=>`<tr><td>${i+1}</td><td><strong>${m.name||''}</strong></td><td>${m.strength||'—'}</td><td>${m.frequency||'—'}</td><td>${m.duration||'—'}</td><td style="color:var(--text-2);">${m.instructions||'—'}</td></tr>`).join('')}</tbody>
       </table>
       ${d.notes?`<div class="alert alert-info" style="margin-top:12px;">📝 ${d.notes}</div>`:''}
       <div class="row" style="margin-top:14px;">
@@ -777,10 +724,8 @@ async function findHospitals() {
   const location = document.getElementById('hosp-location').value.trim();
   const type = document.getElementById('hosp-type').value;
   if (!location) { alert('Please enter a location.'); return; }
-
   const out = document.getElementById('hospitals-list');
-  out.innerHTML = `<div class="card">${spinner('Searching for hospitals near ' + location + '...')}</div>`;
-
+  out.innerHTML = `<div class="card">${spinner('Searching hospitals near ' + location + '...')}</div>`;
   try {
     const res = await fetch(API+'/api/hospitals/nearby', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -788,12 +733,10 @@ async function findHospitals() {
     });
     const json = await res.json();
     const hospitals = json.hospitals || [];
-
     if (!hospitals.length) {
-      out.innerHTML = '<div class="empty"><div class="empty-icon">🏥</div><div class="empty-title">No results found</div><div class="empty-sub">Try a broader location name</div></div>';
+      out.innerHTML = '<div class="empty"><div class="empty-icon">🏥</div><div class="empty-title">No results found</div></div>';
       return;
     }
-
     out.innerHTML = `<div style="font-size:13px;color:var(--text-3);margin-bottom:10px;">Found ${hospitals.length} hospitals near ${location}</div>` +
     hospitals.map(h => `
     <div class="hosp-card">
@@ -823,10 +766,8 @@ async function findHospitals() {
 async function getSituationAdvice() {
   const sit = document.getElementById('situation-input').value.trim();
   if (!sit) { alert('Please describe your situation.'); return; }
-
   const out = document.getElementById('situation-output');
   out.innerHTML = `<div class="card">${spinner('Analyzing your situation...')}</div>`;
-
   try {
     const res = await fetch(API+'/api/symptom/advice', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -836,49 +777,39 @@ async function getSituationAdvice() {
     if (!json.success) throw new Error(json.error);
     const d = json.data;
     const sevClass = {low:'sev-low',medium:'sev-medium',high:'sev-high',emergency:'sev-emergency'};
-
     out.innerHTML = `
     ${d.emergencySign ? `<div class="alert alert-danger" style="font-size:14px;font-weight:600;margin-bottom:12px;">🚨 EMERGENCY: ${d.emergencyReason} — Call 108 immediately!</div>` : ''}
-
     <div class="card">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
         <div style="font-size:15px;font-weight:700;">Situation Assessment</div>
         <span class="severity ${sevClass[d.severity]||'sev-medium'}">● ${(d.severity||'medium').toUpperCase()}</span>
       </div>
-
       <div class="alert ${d.severity==='emergency'||d.severity==='high'?'alert-danger':'alert-info'}" style="margin-bottom:14px;">
         <strong>Immediate Action:</strong> ${d.immediateAction||'Consult a doctor.'}
       </div>
-
       ${d.possibleCauses?.length?`<div class="section-h">🔍 Possible Causes</div><div style="margin-bottom:12px;">${d.possibleCauses.map(c=>`<span class="tag tag-amber">${c}</span>`).join('')}</div>`:''}
-
       ${d.suggestedMedicines?.length?`
       <div class="section-h">💊 Suggested OTC Medicines</div>
       <table class="data-table" style="margin-bottom:14px;">
         <thead><tr><th>Medicine</th><th>Purpose</th><th>Dose</th><th>Note</th></tr></thead>
         <tbody>${d.suggestedMedicines.map(m=>`<tr><td><strong>${m.name||''}</strong></td><td>${m.purpose||''}</td><td>${m.dose||''}</td><td style="color:var(--text-2);">${m.note||''}</td></tr>`).join('')}</tbody>
       </table>`:''}
-
       ${d.homeRemedies?.length?`<div class="section-h">🏠 Home Remedies</div><div style="margin-bottom:12px;">${d.homeRemedies.map(r=>`<span class="tag tag-green">${r}</span>`).join('')}</div>`:''}
-
       <div class="section-h">🏥 When to See a Doctor</div>
       <p style="font-size:13px;color:var(--text);margin-bottom:14px;">${d.whenToSeeDoctor||'If symptoms persist for more than 2 days.'}</p>
-
       ${d.doNots?.length?`<div class="section-h" style="color:var(--red);">🚫 Do NOT</div><div style="margin-bottom:12px;">${d.doNots.map(x=>`<span class="tag tag-red">${x}</span>`).join('')}</div>`:''}
-
       <div class="row" style="margin-top:8px;">
         <button class="btn btn-red" onclick="switchPanel('hospitals');findHospitals()">🏥 Find Hospital ↗</button>
         <button class="btn btn-primary" onclick="switchPanel('chatbot')">Ask AI More ↗</button>
       </div>
     </div>
-
-    <div class="alert alert-warn">⚠️ This is AI-generated advice, NOT a medical diagnosis. Always consult a licensed healthcare professional for proper diagnosis and treatment.</div>`;
+    <div class="alert alert-warn">⚠️ AI-generated advice only. Always consult a licensed doctor.</div>`;
   } catch(e) {
     out.innerHTML = `<div class="alert alert-danger">Error: ${e.message}</div>`;
   }
 }
 
-// ── UTILITY: download blob as file ───────────────────────────
+// ── UTILITY ───────────────────────────────────────────────────
 function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -888,8 +819,5 @@ function downloadBlob(blob, filename) {
   URL.revokeObjectURL(url);
 }
 </script>
-function toggleMenu() {
-  document.querySelector('.sidebar').classList.toggle('open');
-}
 </body>
 </html>

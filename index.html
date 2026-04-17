@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MediScan AI — Medicine Awareness System</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #1a73e8;
+    --blue-light: #e8f0fe;
+    --blue-dark: #1557b0;
+    --green: #0d8a4e;
+    --green-light: #e6f4ea;
+    --red: #c0392b;
+    --red-light: #fce8e6;
+    --amber: #f59e0b;
+    --amber-light: #fef3c7;
+    --purple: #7c3aed;
+    --purple-light: #ede9fe;
+    --gray: #f8f9fa;
+    --gray-mid: #e9ecef;
+    --text: #202124;
+    --text-2: #5f6368;
+    --text-3: #9aa0a6;
+    --border: #dadce0;
+    --white: #ffffff;
+    --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+    --radius: 8px;
+    --radius-lg: 12px;
+    --sidebar-w: 228px;
+  }
+
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: var(--text); height: 100vh; overflow: hidden; display: flex; }
+
+  /* ── SIDEBAR ── */
+  .sidebar { width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; }
+  .logo { padding: 18px 16px 14px; border-bottom: 1px solid var(--border); }
+  .logo-icon { width: 36px; height: 36px; background: var(--blue); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+  .logo-icon svg { fill: white; }
+  .logo-name { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .logo-tagline { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+  .nav { flex: 1; overflow-y: auto; padding: 10px 8px; }
+  .nav-label { font-size: 10px; font-weight: 600; color: var(--text-3); letter-spacing: 0.07em; text-transform: uppercase; padding: 8px 8px 4px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: var(--radius); cursor: pointer; font-size: 13px; color: var(--text-2); margin-bottom: 1px; border: none; background: none; width: 100%; text-align: left; transition: background 0.15s, color 0.15s; }
+  .nav-item:hover { background: var(--gray); color: var(--text); }
+  .nav-item.active { background: var(--blue-light); color: var(--blue); font-weight: 600; }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+  .nav-footer { padding: 12px 16px; border-top: 1px solid var(--border); font-size: 10px; color: var(--text-3); }
+
+  /* ── MAIN ── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 20px; height: 56px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); }
+  .topbar-title { font-size: 16px; font-weight: 600; color: var(--text); }
+  .topbar-badge { font-size: 11px; padding: 2px 10px; border-radius: 20px; background: var(--green-light); color: var(--green); font-weight: 600; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .lang-select { padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; color: var(--text-2); background: var(--gray); cursor: pointer; outline: none; }
+  .lang-select:focus { border-color: var(--blue); }
+  .content { flex: 1; overflow-y: auto; padding: 20px; }
+
+  /* ── PANELS ── */
+  .panel { display: none; animation: fadeIn 0.2s; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── CARD ── */
+  .card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; margin-bottom: 14px; box-shadow: var(--shadow); }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .card-icon { width: 28px; height: 28px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+
+  /* ── FORM ELEMENTS ── */
+  .input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--text); background: var(--gray); outline: none; transition: border 0.15s; font-family: inherit; }
+  .input:focus { border-color: var(--blue); background: var(--white); }
+  .textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+  .btn { padding: 9px 18px; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); transition: all 0.15s; font-family: inherit; }
+  .btn:hover { background: var(--gray); }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--blue); color: white; border-color: var(--blue); }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-green { background: var(--green); color: white; border-color: var(--green); }
+  .btn-green:hover { opacity: 0.9; }
+  .btn-red { background: var(--red); color: white; border-color: var(--red); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* ── TAGS / CHIPS ── */
+  .tag { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; margin: 2px; line-height: 1.4; }
+  .tag-green { background: var(--green-light); color: #137333; }
+  .tag-red { background: var(--red-light); color: #a52714; }
+  .tag-amber { background: var(--amber-light); color: #92400e; }
+  .tag-blue { background: var(--blue-light); color: #1557b0; }
+  .tag-purple { background: var(--purple-light); color: #5b21b6; }
+  .filter-chip { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text-2); transition: all 0.15s; }
+  .filter-chip.selected { background: var(--blue); color: white; border-color: var(--blue); }
+
+  /* ── STAT CARDS ── */
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+  .stat-card { background: var(--gray); border-radius: var(--radius); padding: 12px 14px; }
+  .stat-label { font-size: 11px; color: var(--text-3); font-weight: 500; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .stat-val { font-size: 17px; font-weight: 700; color: var(--text); }
+
+  /* ── TABLE ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .data-table th { text-align: left; padding: 8px 10px; color: var(--text-2); border-bottom: 2px solid var(--border); font-weight: 600; background: var(--gray); }
+  .data-table td { padding: 9px 10px; border-bottom: 1px solid var(--gray-mid); color: var(--text); vertical-align: top; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--gray); }
+
+  /* ── SECTION HEADING ── */
+  .section-h { font-size: 13px; font-weight: 600; color: var(--text-2); margin: 18px 0 8px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* ── CHATBOT ── */
+  .chat-wrap { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; height: 520px; box-shadow: var(--shadow); }
+  .chat-header { padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--blue); color: white; }
+  .chat-header-title { font-size: 14px; font-weight: 700; }
+  .chat-header-sub { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: var(--gray); }
+  .msg { max-width: 78%; padding: 10px 14px; border-radius: var(--radius-lg); font-size: 13px; line-height: 1.6; word-break: break-word; }
+  .msg-user { background: var(--blue); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .msg-bot { background: var(--white); color: var(--text); align-self: flex-start; border: 1px solid var(--border); border-bottom-left-radius: 4px; box-shadow: var(--shadow); }
+  .msg-bot.typing { opacity: 0.7; }
+  .chat-footer { padding: 12px 14px; border-top: 1px solid var(--border); display: flex; gap: 8px; background: var(--white); }
+  .chat-input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; font-family: inherit; resize: none; outline: none; background: var(--gray); color: var(--text); }
+  .chat-input:focus { border-color: var(--blue); background: var(--white); }
+
+  /* ── UPLOAD ZONE ── */
+  .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius-lg); padding: 40px 20px; text-align: center; cursor: pointer; background: var(--white); transition: all 0.2s; }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--blue); background: var(--blue-light); }
+  .upload-icon { font-size: 40px; margin-bottom: 12px; }
+  .upload-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .upload-sub { font-size: 12px; color: var(--text-3); }
+
+  /* ── HOSPITAL CARD ── */
+  .hosp-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); }
+  .hosp-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; background: var(--red-light); }
+  .hosp-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .hosp-meta { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+  .hosp-tags { margin-top: 5px; }
+  .hosp-actions { margin-left: auto; display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+
+  /* ── RX CARD ── */
+  .rx-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md); }
+  .rx-header { background: var(--blue); color: white; padding: 18px 20px; display: flex; justify-content: space-between; align-items: flex-start; }
+  .rx-doctor-name { font-size: 16px; font-weight: 700; }
+  .rx-meta { font-size: 12px; opacity: 0.85; margin-top: 3px; }
+  .rx-body { padding: 0 0 4px; }
+  .rx-patient-bar { background: var(--blue-light); padding: 10px 18px; display: flex; gap: 20px; }
+  .rx-patient-label { font-size: 11px; color: var(--blue); font-weight: 600; }
+  .rx-patient-val { font-size: 13px; color: var(--text); font-weight: 600; }
+  .rx-item { padding: 12px 18px; border-bottom: 1px solid var(--gray-mid); display: flex; gap: 14px; align-items: flex-start; }
+  .rx-num { width: 22px; height: 22px; background: var(--blue); color: white; border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .rx-med-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .rx-detail { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+
+  /* ── SEVERITY BADGE ── */
+  .severity { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .sev-low { background: var(--green-light); color: #0d8a4e; }
+  .sev-medium { background: var(--amber-light); color: #92400e; }
+  .sev-high { background: var(--red-light); color: var(--red); }
+  .sev-emergency { background: #fee2e2; color: #991b1b; }
+
+  /* ── ALERT BOX ── */
+  .alert { padding: 12px 16px; border-radius: var(--radius); font-size: 12px; margin-top: 12px; line-height: 1.6; }
+  .alert-warn { background: var(--amber-light); color: #92400e; border-left: 4px solid var(--amber); }
+  .alert-danger { background: var(--red-light); color: var(--red); border-left: 4px solid var(--red); }
+  .alert-info { background: var(--blue-light); color: #1557b0; border-left: 4px solid var(--blue); }
+  .alert-success { background: var(--green-light); color: #137333; border-left: 4px solid var(--green); }
+
+  /* ── LOADING SPINNER ── */
+  .spinner-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; gap: 12px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--gray-mid); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner-text { font-size: 13px; color: var(--text-3); }
+
+  /* ── EMPTY STATE ── */
+  .empty { text-align: center; padding: 50px 20px; }
+  .empty-icon { font-size: 48px; margin-bottom: 14px; opacity: 0.6; }
+  .empty-title { font-size: 15px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; color: var(--text-3); }
+
+  /* ── DOTS (typing) ── */
+  .dots { display: inline-flex; gap: 4px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); animation: blink 1.2s infinite; }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink { 0%,60%,100%{opacity:0.3;transform:scale(0.8)} 30%{opacity:1;transform:scale(1.1)} }
+
+  /* ── SCAN IMAGE PREVIEW ── */
+  .scan-preview-img { width: 100%; max-height: 220px; object-fit: contain; border-radius: var(--radius); border: 1px solid var(--border); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+    .grid-2, .grid-3, .stat-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SIDEBAR
+============================================================ -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm0-4h-2V7h2v8z"/></svg>
+    </div>
+    <div class="logo-name">MediScan AI</div>
+    <div class="logo-tagline">Medicine Awareness System</div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-label">Core Features</div>
+    <button class="nav-item active" id="nav-search" onclick="switchPanel('search')">
+      <span class="icon">💊</span> Medicine Search
+    </button>
+    <button class="nav-item" id="nav-chatbot" onclick="switchPanel('chatbot')">
+      <span class="icon">🤖</span> AI Health Chat
+    </button>
+    <button class="nav-item" id="nav-prescription" onclick="switchPanel('prescription')">
+      <span class="icon">📋</span> Prescription
+    </button>
+    <button class="nav-item" id="nav-scanner" onclick="switchPanel('scanner')">
+      <span class="icon">📷</span> Scan Prescription
+    </button>
+    <div class="nav-label">Emergency & Support</div>
+    <button class="nav-item" id="nav-hospitals" onclick="switchPanel('hospitals')">
+      <span class="icon">🏥</span> Nearby Hospitals
+    </button>
+    <button class="nav-item" id="nav-situation" onclick="switchPanel('situation')">
+      <span class="icon">⚕️</span> Symptom Advisor
+    </button>
+  </nav>
+
+  <div class="nav-footer">⚠️ For informational use only.<br>Always consult a licensed doctor.</div>
+</aside>
+
+<!-- ============================================================
+     MAIN
+============================================================ -->
+<main class="main">
+  <header class="topbar">
+    <span class="topbar-title" id="topbar-title">Medicine Search</span>
+    <span class="topbar-badge">AI-Powered</span>
+    <div class="topbar-right">
+      <select class="lang-select" id="global-lang" onchange="setGlobalLang(this.value)">
+        <option value="en">🌐 English</option>
+        <option value="te">Telugu</option>
+        <option value="hi">Hindi</option>
+        <option value="ta">Tamil</option>
+        <option value="fr">French</option>
+        <option value="es">Spanish</option>
+        <option value="ar">Arabic</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ======================================================
+         PANEL 1: MEDICINE SEARCH
+    ====================================================== -->
+    <div class="panel active" id="panel-search">
+      <div class="card">
+        <div class="row" style="margin-bottom:12px;">
+          <input class="input" id="med-input" style="flex:1;" placeholder="Enter medicine / injection name (e.g. Paracetamol, Insulin, Amoxicillin...)" onkeydown="if(event.key==='Enter')searchMedicine()" />
+          <select class="lang-select" id="med-lang">
+            <option value="en">EN</option><option value="te">TE</option>
+            <option value="hi">HI</option><option value="ta">TA</option>
+            <option value="fr">FR</option><option value="es">ES</option>
+          </select>
+          <button class="btn btn-primary" onclick="searchMedicine()">🔍 Search</button>
+        </div>
+        <div class="row">
+          <span class="filter-chip selected" onclick="selectFilter(this,'all')">All</span>
+          <span class="filter-chip" onclick="selectFilter(this,'tablet')">💊 Tablet</span>
+          <span class="filter-chip" onclick="selectFilter(this,'injection')">💉 Injection</span>
+          <span class="filter-chip" onclick="selectFilter(this,'syrup')">🧪 Syrup</span>
+          <span class="filter-chip" onclick="selectFilter(this,'capsule')">💉 Capsule</span>
+          <span class="filter-chip" onclick="selectFilter(this,'cream')">🧴 Cream</span>
+        </div>
+      </div>
+
+      <div id="search-results">
+        <div class="empty">
+          <div class="empty-icon">💊</div>
+          <div class="empty-title">Search any medicine or injection</div>
+          <div class="empty-sub">Get advantages · disadvantages · side effects · dosage by age group · interactions</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         PANEL 2: AI CHATBOT
+    ====================================================== -->
+    <div class="panel" id="panel-chatbot">
+      <div class="chat-wrap">
+        <div class="chat-header">
+          <div class="chat-header-title">🤖 AI Health Assistant</div>
+          <div class="chat-header-sub">Ask about medicines, symptoms, drug interactions, dosages, or any health question</div>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+          <div class="msg msg-bot">Hello! I'm your AI health assistant. I can help with:<br>• Medicine information &amp; interactions<br>• Symptom understanding<br>• Dosage questions<br>• What to do in health situations<br><br>Remember to always consult a licensed doctor for diagnosis and treatment.</div>
+        </div>
+        <div class="chat-footer">
+          <textarea class="chat-input" id="chat-input" rows="2" placeholder="Type your health question... (Enter to send)"></textarea>
+          <button class="btn btn-primary" onclick="sendChat()">Send ➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         PANEL 3: PRESCRIPTION
+    ====================================================== -->
+    <div class="panel" id="panel-prescription">
+      <div class="card">
+        <div class="card-title">📋 Enter Prescription Details</div>
+        <div class="grid-2" style="margin-bottom:10px;">
+          <input class="input" id="rx-patient" placeholder="Patient full name" />
+          <input class="input" id="rx-age" placeholder="Patient age (e.g. 35)" />
+          <input class="input" id="rx-doctor" placeholder="Doctor name & qualification" />
+          <input class="input" id="rx-date" type="date" />
+        </div>
+        <textarea class="input textarea" id="rx-medicines" placeholder="Enter medicines (one per line):&#10;Paracetamol 500mg - twice daily after meals for 5 days&#10;Amoxicillin 250mg - three times daily for 7 days&#10;Pantoprazole 40mg - once daily before breakfast"></textarea>
+        <div class="row" style="margin-top:12px;">
+          <button class="btn btn-primary" onclick="processPrescription()">📋 Generate Prescription Card</button>
+          <button class="btn" onclick="downloadRxPDF()" id="rx-pdf-btn" style="display:none;">⬇ Download PDF</button>
+        </div>
+      </div>
+      <div id="rx-output"></div>
+    </div>
+
+    <!-- ======================================================
+         PANEL 4: SCAN PRESCRIPTION
+    ====================================================== -->
+    <div class="panel" id="panel-scanner">
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('scan-file').click()"
+           ondragover="event.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="handleDrop(event)">
+        <input type="file" id="scan-file" accept="image/*,application/pdf" style="display:none;" onchange="handleScanFile(event)" />
+        <div class="upload-icon">📷</div>
+        <div class="upload-title">Scan or Upload Prescription</div>
+        <div class="upload-sub">Click or drag &amp; drop your prescription image here<br>Supports JPG, PNG, HEIC, PDF · Max 10MB</div>
+      </div>
+
+      <div id="scan-preview" style="display:none;">
+        <div class="card" style="margin-top:14px;">
+          <div class="card-title"><span class="card-icon" style="background:var(--green-light);">✅</span> Uploaded Successfully</div>
+          <img id="scan-img" class="scan-preview-img" />
+          <div class="row" style="margin-top:12px;">
+            <button class="btn btn-primary" onclick="analyzeScan()">🤖 Analyze with AI</button>
+            <button class="btn" onclick="document.getElementById('scan-file').click()">🔄 Upload Different</button>
+          </div>
+        </div>
+      </div>
+      <div id="scan-result"></div>
+    </div>
+
+    <!-- ======================================================
+         PANEL 5: NEARBY HOSPITALS
+    ====================================================== -->
+    <div class="panel" id="panel-hospitals">
+      <div class="card">
+        <div class="card-title">🏥 Find Nearby Hospitals</div>
+        <div class="row">
+          <input class="input" id="hosp-location" style="flex:1;" placeholder="Enter your area or city (e.g. Chittoor, AP)" value="Chittoor, Andhra Pradesh" />
+          <select class="lang-select" id="hosp-type" style="padding:10px 12px;">
+            <option>Any Type</option>
+            <option>Government</option>
+            <option>Private</option>
+            <option>Emergency</option>
+            <option>Clinic</option>
+          </select>
+          <button class="btn btn-primary" onclick="findHospitals()">🔍 Find</button>
+        </div>
+        <div class="alert alert-info" style="margin-top:12px;">
+          📍 Results are AI-generated suggestions. Verify contact details before visiting. Use Google Maps link for exact directions.
+        </div>
+      </div>
+      <div id="hospitals-list">
+        <div class="empty">
+          <div class="empty-icon">🏥</div>
+          <div class="empty-title">Enter your location above</div>
+          <div class="empty-sub">We'll find nearby hospitals with contact details and emergency info</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         PANEL 6: SYMPTOM ADVISOR
+    ====================================================== -->
+    <div class="panel" id="panel-situation">
+      <div class="card">
+        <div class="card-title">⚕️ Describe Your Situation</div>
+        <textarea class="input textarea" id="situation-input" style="min-height:110px;"
+          placeholder="Describe your symptoms in detail (e.g.):&#10;I am 35 years old. I have had fever (102°F), severe headache, and body pain for the last 2 days. I also have a runny nose and mild cough. I am not diabetic but have mild hypertension..."></textarea>
+        <div class="row" style="margin-top:12px;">
+          <button class="btn btn-primary" onclick="getSituationAdvice()">🔍 Get AI Advice</button>
+          <span style="font-size:12px;color:var(--text-3);">AI will assess severity and suggest what to do</span>
+        </div>
+      </div>
+      <div id="situation-output"></div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+const API = '';  // empty = same origin (server.js serves index.html)
+const panels = ['search','chatbot','prescription','scanner','hospitals','situation'];
+const titles = {
+  search:'Medicine Search', chatbot:'AI Health Chat',
+  prescription:'Prescription', scanner:'Scan Prescription',
+  hospitals:'Nearby Hospitals', situation:'Symptom Advisor'
+};
+
+// ── Panel switcher ────────────────────────────────────────────
+function switchPanel(name) {
+  panels.forEach(p => {
+    document.getElementById('panel-'+p).classList.toggle('active', p===name);
+    document.getElementById('nav-'+p).classList.toggle('active', p===name);
+  });
+  document.getElementById('topbar-title').textContent = titles[name];
+  window.scrollTo(0,0);
+}
+
+function selectFilter(el, val) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function setGlobalLang(v) {
+  document.getElementById('med-lang').value = v;
+}
+
+function spinner(text='Analyzing...') {
+  return `<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">${text}</div></div>`;
+}
+
+// ── 1. MEDICINE SEARCH ────────────────────────────────────────
+async function searchMedicine() {
+  const name = document.getElementById('med-input').value.trim();
+  const lang = document.getElementById('med-lang').value;
+  if (!name) { document.getElementById('med-input').focus(); return; }
+
+  const el = document.getElementById('search-results');
+  el.innerHTML = `<div class="card">${spinner('Analyzing ' + name + '...')}</div>`;
+
+  try {
+    const res = await fetch(API + '/api/medicine/search', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name, language: lang })
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error);
+    renderMedicineResult(json.data);
+  } catch(e) {
+    el.innerHTML = `<div class="card"><div class="alert alert-danger">❌ Error: ${e.message}. Please check the server is running and try again.</div></div>`;
+  }
+}
+
+function renderMedicineResult(d) {
+  const el = document.getElementById('search-results');
+  const pregColor = {safe:'tag-green',caution:'tag-amber',avoid:'tag-red',unknown:'tag-blue'};
+
+  el.innerHTML = `
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">Type</div><div class="stat-val" style="font-size:15px;">${d.type||'—'}</div></div>
+    <div class="stat-card"><div class="stat-label">Category</div><div class="stat-val" style="font-size:13px;line-height:1.3;">${d.category||'—'}</div></div>
+    <div class="stat-card"><div class="stat-label">Pregnancy</div><div class="stat-val"><span class="tag ${pregColor[d.pregnancy]||'tag-blue'}">${d.pregnancy||'unknown'}</span></div></div>
+  </div>
+
+  ${d.brandNames?.length ? `<div class="card" style="padding:12px 16px;"><span style="font-size:12px;color:var(--text-3);">Brand names: </span>${d.brandNames.map(b=>`<span class="tag tag-blue">${b}</span>`).join('')}</div>` : ''}
+
+  ${d.mechanism ? `<div class="card"><div class="card-title"><span class="card-icon" style="background:#e3f2fd;">🔬</span>Mechanism of Action</div><p style="font-size:13px;color:var(--text-2);line-height:1.7;">${d.mechanism}</p></div>` : ''}
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="card-icon" style="background:var(--green-light);">✅</span>Advantages</div>
+      ${(d.advantages||[]).map(a=>`<div class="tag tag-green">${a}</div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon" style="background:var(--red-light);">⚠️</span>Disadvantages</div>
+      ${(d.disadvantages||[]).map(a=>`<div class="tag tag-red">${a}</div>`).join('')}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="card-icon" style="background:var(--amber-light);">🩺</span>Side Effects</div>
+    <div class="grid-3">
+      <div>
+        <div class="section-h" style="color:#92400e;">⚡ Common</div>
+        ${(d.sideEffects?.common||[]).map(s=>`<div class="tag tag-amber">${s}</div>`).join('')}
+      </div>
+      <div>
+        <div class="section-h" style="color:var(--red);">🚨 Serious</div>
+        ${(d.sideEffects?.serious||[]).map(s=>`<div class="tag tag-red">${s}</div>`).join('')}
+      </div>
+      <div>
+        <div class="section-h" style="color:#5b21b6;">🔵 Rare</div>
+        ${(d.sideEffects?.rare||[]).map(s=>`<div class="tag tag-purple">${s}</div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="card-icon" style="background:var(--blue-light);">💊</span>Dosage by Age Group</div>
+    <table class="data-table">
+      <thead><tr><th>Age Group</th><th>Dose</th><th>Frequency</th><th>Special Notes</th></tr></thead>
+      <tbody>
+        ${(d.doses||[]).map(row=>`<tr><td><strong>${row.ageGroup||''}</strong></td><td>${row.dose||''}</td><td>${row.frequency||''}</td><td style="color:var(--text-2);">${row.notes||'—'}</td></tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="card-icon" style="background:var(--purple-light);">🚫</span>Contraindications</div>
+      ${(d.contraindications||[]).map(c=>`<div class="tag tag-red">${c}</div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon" style="background:var(--amber-light);">⚡</span>Drug Interactions</div>
+      ${(d.interactions||[]).map(i=>`<div class="tag tag-amber">${i}</div>`).join('')}
+    </div>
+  </div>
+
+  ${d.storage ? `<div class="card"><div class="card-title"><span class="card-icon" style="background:var(--green-light);">📦</span>Storage</div><p style="font-size:13px;color:var(--text-2);">${d.storage}</p></div>` : ''}
+
+  ${d.overdose ? `<div class="card"><div class="card-title"><span class="card-icon" style="background:var(--red-light);">🚨</span>Overdose Information</div><p style="font-size:13px;color:var(--text);">${d.overdose}</p></div>` : ''}
+
+  <div class="row" style="margin-bottom:8px;">
+    <button class="btn btn-green" onclick="downloadMedicinePDF()">⬇ Download PDF Report</button>
+    <button class="btn btn-primary" onclick="switchPanel('chatbot')">Ask AI More ↗</button>
+  </div>
+  <div class="alert alert-warn">⚠️ This information is for educational purposes only. Always consult a licensed doctor or pharmacist before taking any medication.</div>`;
+
+  window._lastMedicineData = d;
+}
+
+// ── Download Medicine PDF ─────────────────────────────────────
+async function downloadMedicinePDF() {
+  if (!window._lastMedicineData) return;
+  try {
+    const res = await fetch(API+'/api/pdf/medicine', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ data: window._lastMedicineData })
+    });
+    const blob = await res.blob();
+    downloadBlob(blob, (window._lastMedicineData.name||'medicine')+'-report.pdf');
+  } catch(e) { alert('PDF error: '+e.message); }
+}
+
+// ── 2. CHATBOT ────────────────────────────────────────────────
+const chatHistory = [];
+async function sendChat() {
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+
+  const box = document.getElementById('chat-messages');
+  addMsg(box, text, 'user');
+  chatHistory.push({ role:'user', content:text });
+  inp.value = '';
+
+  const typingEl = document.createElement('div');
+  typingEl.className = 'msg msg-bot typing';
+  typingEl.innerHTML = '<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  box.appendChild(typingEl);
+  box.scrollTop = box.scrollHeight;
+
+  try {
+    const res = await fetch(API+'/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ messages: chatHistory })
+    });
+    const json = await res.json();
+    const reply = json.reply || 'Sorry, I could not process that.';
+    chatHistory.push({ role:'assistant', content:reply });
+    typingEl.classList.remove('typing');
+    typingEl.textContent = reply;
+  } catch(e) {
+    typingEl.textContent = 'Connection error. Make sure the server is running.';
+  }
+  box.scrollTop = box.scrollHeight;
+}
+
+function addMsg(box, text, role) {
+  const el = document.createElement('div');
+  el.className = 'msg msg-'+role;
+  el.textContent = text;
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
+}
+
+document.getElementById('chat-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+});
+
+// ── 3. PRESCRIPTION ───────────────────────────────────────────
+async function processPrescription() {
+  const patient = document.getElementById('rx-patient').value || 'Patient';
+  const age     = document.getElementById('rx-age').value || '—';
+  const doctor  = document.getElementById('rx-doctor').value || 'Doctor';
+  const date    = document.getElementById('rx-date').value || new Date().toISOString().split('T')[0];
+  const meds    = document.getElementById('rx-medicines').value.trim();
+  if (!meds) { alert('Please enter medicine details.'); return; }
+
+  const out = document.getElementById('rx-output');
+  out.innerHTML = `<div class="card">${spinner('Processing prescription...')}</div>`;
+
+  try {
+    const res = await fetch(API+'/api/prescription/process', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ patient, age, doctor, date, medicines:meds })
+    });
+    const json = await res.json();
+    renderPrescriptionCard(json);
+    document.getElementById('rx-pdf-btn').style.display = 'inline-flex';
+    window._lastRxData = json;
+  } catch(e) {
+    out.innerHTML = `<div class="alert alert-danger">Error: ${e.message}</div>`;
+  }
+}
+
+function renderPrescriptionCard(data) {
+  const out = document.getElementById('rx-output');
+  const items = data.items || [];
+  out.innerHTML = `
+  <div class="rx-card">
+    <div class="rx-header">
+      <div>
+        <div class="rx-doctor-name">Dr. ${data.doctor||'—'}</div>
+        <div class="rx-meta">Medical Prescription · ${data.date||''}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:13px;font-weight:700;opacity:0.9;">MediScan AI</div>
+        <div class="rx-meta">Verified Prescription</div>
+      </div>
+    </div>
+    <div class="rx-patient-bar">
+      <div><div class="rx-patient-label">PATIENT</div><div class="rx-patient-val">${data.patient||'—'}</div></div>
+      <div><div class="rx-patient-label">AGE</div><div class="rx-patient-val">${data.age||'—'}</div></div>
+      <div><div class="rx-patient-label">DATE</div><div class="rx-patient-val">${data.date||'—'}</div></div>
+      <div><div class="rx-patient-label">MEDICINES</div><div class="rx-patient-val">${items.length || '?'}</div></div>
+    </div>
+    <div class="rx-body">
+      ${items.length > 0 ? items.map((m,i) => `
+      <div class="rx-item">
+        <div class="rx-num">${i+1}</div>
+        <div style="flex:1;">
+          <div class="rx-med-name">${m.name||'Medicine'} <span style="font-weight:400;color:var(--text-2);">${m.strength||''}</span></div>
+          <div class="rx-detail">📅 ${m.frequency||''} · ⏱ ${m.duration||''} · ${m.timing||''}</div>
+          ${m.instructions?`<div class="rx-detail">📌 ${m.instructions}</div>`:''}
+          ${m.sideEffectNote?`<div class="rx-detail" style="color:var(--amber);">⚡ ${m.sideEffectNote}</div>`:''}
+          ${m.warnings?`<span class="tag tag-red">⚠ ${m.warnings}</span>`:''}
+        </div>
+      </div>`).join('') : `<div style="padding:16px;font-size:13px;color:var(--text-2);">${document.getElementById('rx-medicines').value.split('\n').filter(Boolean).map((l,i)=>`<div style="padding:10px 0;border-bottom:1px solid var(--gray-mid);">💊 ${l}</div>`).join('')}</div>`}
+    </div>
+  </div>
+  <div class="row" style="margin-top:12px;">
+    <button class="btn btn-green" onclick="downloadRxPDF()">⬇ Download Prescription PDF</button>
+  </div>
+  <div class="alert alert-warn" style="margin-top:10px;">⚠️ Keep this prescription safe. Take medicines as directed by your doctor.</div>`;
+}
+
+async function downloadRxPDF() {
+  const data = window._lastRxData;
+  if (!data) { alert('Generate prescription first.'); return; }
+  try {
+    const res = await fetch(API+'/api/pdf/prescription', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+    const blob = await res.blob();
+    downloadBlob(blob, 'prescription-'+( data.patient||'patient')+'.pdf');
+  } catch(e) { alert('PDF error: '+e.message); }
+}
+
+// ── 4. SCAN ───────────────────────────────────────────────────
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+}
+
+function handleScanFile(e) {
+  const file = e.target.files[0];
+  if (file) processFile(file);
+}
+
+function processFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('scan-img').src = ev.target.result;
+    document.getElementById('scan-preview').style.display = 'block';
+    document.getElementById('scan-result').innerHTML = '';
+    window._scanFile = file;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzeScan() {
+  if (!window._scanFile) { alert('Please upload a prescription image first.'); return; }
+  const out = document.getElementById('scan-result');
+  out.innerHTML = `<div class="card">${spinner('Reading prescription with AI...')}</div>`;
+
+  const formData = new FormData();
+  formData.append('file', window._scanFile);
+
+  try {
+    const res = await fetch(API+'/api/prescription/scan', { method:'POST', body:formData });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error);
+    const d = json.data;
+    window._lastScanData = d;
+
+    out.innerHTML = `
+    <div class="card" style="margin-top:14px;">
+      <div class="card-title"><span class="card-icon" style="background:var(--green-light);">🔍</span>Scan Analysis Complete
+        <span class="tag tag-${d.confidence==='high'?'green':d.confidence==='medium'?'amber':'red'}" style="margin-left:auto;">${d.confidence||'?'} confidence</span>
+      </div>
+      <div class="grid-2" style="margin-bottom:12px;">
+        ${[['Doctor',d.doctor],['Clinic',d.clinic],['Patient',d.patient],['Age',d.age],['Date',d.date],['Diagnosis',d.diagnosis]]
+          .filter(r=>r[1]).map(r=>`<div><div style="font-size:11px;color:var(--text-3);font-weight:600;text-transform:uppercase;">${r[0]}</div><div style="font-size:13px;color:var(--text);font-weight:500;">${r[1]}</div></div>`).join('')}
+      </div>
+      <div class="section-h">💊 Extracted Medicines</div>
+      <table class="data-table">
+        <thead><tr><th>#</th><th>Medicine</th><th>Strength</th><th>Frequency</th><th>Duration</th><th>Instructions</th></tr></thead>
+        <tbody>
+          ${(d.medicines||[]).map((m,i)=>`<tr><td>${i+1}</td><td><strong>${m.name||''}</strong></td><td>${m.strength||'—'}</td><td>${m.frequency||'—'}</td><td>${m.duration||'—'}</td><td style="color:var(--text-2);">${m.instructions||'—'}</td></tr>`).join('')}
+        </tbody>
+      </table>
+      ${d.notes?`<div class="alert alert-info" style="margin-top:12px;">📝 ${d.notes}</div>`:''}
+      <div class="row" style="margin-top:14px;">
+        <button class="btn btn-green" onclick="downloadScanPDF()">⬇ Download Scan Report PDF</button>
+      </div>
+    </div>`;
+  } catch(e) {
+    out.innerHTML = `<div class="alert alert-danger">Error: ${e.message}</div>`;
+  }
+}
+
+async function downloadScanPDF() {
+  if (!window._lastScanData) return;
+  try {
+    const res = await fetch(API+'/api/pdf/scan', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ data: window._lastScanData })
+    });
+    const blob = await res.blob();
+    downloadBlob(blob, 'prescription-scan-analysis.pdf');
+  } catch(e) { alert('PDF error: '+e.message); }
+}
+
+// ── 5. HOSPITALS ──────────────────────────────────────────────
+async function findHospitals() {
+  const location = document.getElementById('hosp-location').value.trim();
+  const type = document.getElementById('hosp-type').value;
+  if (!location) { alert('Please enter a location.'); return; }
+
+  const out = document.getElementById('hospitals-list');
+  out.innerHTML = `<div class="card">${spinner('Searching for hospitals near ' + location + '...')}</div>`;
+
+  try {
+    const res = await fetch(API+'/api/hospitals/nearby', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ location, type })
+    });
+    const json = await res.json();
+    const hospitals = json.hospitals || [];
+
+    if (!hospitals.length) {
+      out.innerHTML = '<div class="empty"><div class="empty-icon">🏥</div><div class="empty-title">No results found</div><div class="empty-sub">Try a broader location name</div></div>';
+      return;
+    }
+
+    out.innerHTML = `<div style="font-size:13px;color:var(--text-3);margin-bottom:10px;">Found ${hospitals.length} hospitals near ${location}</div>` +
+    hospitals.map(h => `
+    <div class="hosp-card">
+      <div class="hosp-avatar">${h.emergency?'🚑':'🏥'}</div>
+      <div style="flex:1;">
+        <div class="hosp-name">${h.name||'Hospital'}</div>
+        <div class="hosp-meta">📍 ${h.address||'—'} · ${h.distance||''}</div>
+        ${h.phone?`<div class="hosp-meta">📞 ${h.phone}</div>`:''}
+        ${h.speciality?`<div class="hosp-meta">🩺 ${h.speciality}</div>`:''}
+        <div class="hosp-tags">
+          <span class="tag tag-blue">${h.type||'Hospital'}</span>
+          ${h.emergency?'<span class="tag tag-red">🚨 24/7 Emergency</span>':''}
+          ${h.rating?`<span class="tag tag-green">⭐ ${h.rating}</span>`:''}
+        </div>
+      </div>
+      <div class="hosp-actions">
+        ${h.phone?`<button class="btn btn-primary btn-sm" onclick="window.open('tel:${h.phone}')">📞 Call</button>`:''}
+        <button class="btn btn-sm" onclick="window.open('https://maps.google.com?q=${encodeURIComponent((h.name||'')+' '+(h.address||''))}')">🗺 Maps</button>
+      </div>
+    </div>`).join('');
+  } catch(e) {
+    out.innerHTML = `<div class="alert alert-danger">Error: ${e.message}</div>`;
+  }
+}
+
+// ── 6. SYMPTOM ADVISOR ────────────────────────────────────────
+async function getSituationAdvice() {
+  const sit = document.getElementById('situation-input').value.trim();
+  if (!sit) { alert('Please describe your situation.'); return; }
+
+  const out = document.getElementById('situation-output');
+  out.innerHTML = `<div class="card">${spinner('Analyzing your situation...')}</div>`;
+
+  try {
+    const res = await fetch(API+'/api/symptom/advice', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ situation: sit })
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error);
+    const d = json.data;
+    const sevClass = {low:'sev-low',medium:'sev-medium',high:'sev-high',emergency:'sev-emergency'};
+
+    out.innerHTML = `
+    ${d.emergencySign ? `<div class="alert alert-danger" style="font-size:14px;font-weight:600;margin-bottom:12px;">🚨 EMERGENCY: ${d.emergencyReason} — Call 108 immediately!</div>` : ''}
+
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="font-size:15px;font-weight:700;">Situation Assessment</div>
+        <span class="severity ${sevClass[d.severity]||'sev-medium'}">● ${(d.severity||'medium').toUpperCase()}</span>
+      </div>
+
+      <div class="alert ${d.severity==='emergency'||d.severity==='high'?'alert-danger':'alert-info'}" style="margin-bottom:14px;">
+        <strong>Immediate Action:</strong> ${d.immediateAction||'Consult a doctor.'}
+      </div>
+
+      ${d.possibleCauses?.length?`<div class="section-h">🔍 Possible Causes</div><div style="margin-bottom:12px;">${d.possibleCauses.map(c=>`<span class="tag tag-amber">${c}</span>`).join('')}</div>`:''}
+
+      ${d.suggestedMedicines?.length?`
+      <div class="section-h">💊 Suggested OTC Medicines</div>
+      <table class="data-table" style="margin-bottom:14px;">
+        <thead><tr><th>Medicine</th><th>Purpose</th><th>Dose</th><th>Note</th></tr></thead>
+        <tbody>${d.suggestedMedicines.map(m=>`<tr><td><strong>${m.name||''}</strong></td><td>${m.purpose||''}</td><td>${m.dose||''}</td><td style="color:var(--text-2);">${m.note||''}</td></tr>`).join('')}</tbody>
+      </table>`:''}
+
+      ${d.homeRemedies?.length?`<div class="section-h">🏠 Home Remedies</div><div style="margin-bottom:12px;">${d.homeRemedies.map(r=>`<span class="tag tag-green">${r}</span>`).join('')}</div>`:''}
+
+      <div class="section-h">🏥 When to See a Doctor</div>
+      <p style="font-size:13px;color:var(--text);margin-bottom:14px;">${d.whenToSeeDoctor||'If symptoms persist for more than 2 days.'}</p>
+
+      ${d.doNots?.length?`<div class="section-h" style="color:var(--red);">🚫 Do NOT</div><div style="margin-bottom:12px;">${d.doNots.map(x=>`<span class="tag tag-red">${x}</span>`).join('')}</div>`:''}
+
+      <div class="row" style="margin-top:8px;">
+        <button class="btn btn-red" onclick="switchPanel('hospitals');findHospitals()">🏥 Find Hospital ↗</button>
+        <button class="btn btn-primary" onclick="switchPanel('chatbot')">Ask AI More ↗</button>
+      </div>
+    </div>
+
+    <div class="alert alert-warn">⚠️ This is AI-generated advice, NOT a medical diagnosis. Always consult a licensed healthcare professional for proper diagnosis and treatment.</div>`;
+  } catch(e) {
+    out.innerHTML = `<div class="alert alert-danger">Error: ${e.message}</div>`;
+  }
+}
+
+// ── UTILITY: download blob as file ───────────────────────────
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
